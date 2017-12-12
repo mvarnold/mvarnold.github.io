@@ -10,6 +10,8 @@ categories: jekyll update
 ## Introduction
 Recently, I've been working on this problem of optimal facility placement. Um et. al. reported an optimal facility placement which scales as a power law to the population density  \\( D \sim p^\alpha \\). For facilities that attempt to maximize profit \\(\alpha = 1\\), while systems that try to maximize facility access by minimizing average travel time, scale as \\(\alpha = 2/3\\). This optimal scaling relects emperically observed facility placement. Certainly my introduction to this topic began with Um et al.
 
+$$ x^2 $$
+
 Prior to this empirical study, Gastner and Newman published a paper looking at this same facility placement problem. They had previously published a paper demonstrating the applicability of diffusion methods to create density equalizing cartograms, and 
 a
 
