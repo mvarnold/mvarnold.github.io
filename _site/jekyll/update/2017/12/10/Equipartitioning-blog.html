@@ -9,7 +9,7 @@ config=TeX-AMS-MML_HTMLorMML"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Equiparitioning</title>
-  <meta name="description" content="Introduction Recently, I’ve been working on this problem of optimal facility placement. Um et. al. reported an optimal facility placement which scales as a p...">
+  <meta name="description" content="">
 
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="http://localhost:4000/jekyll/update/2017/12/10/Equipartitioning-blog.html">
@@ -101,24 +101,59 @@ config=TeX-AMS-MML_HTMLorMML"></script>
 </script>
 
 <h2 id="introduction">Introduction</h2>
-<p>Recently, I’ve been working on this problem of optimal facility placement. Um et. al. reported an optimal facility placement which scales as a power law to the population density  \( D \sim p^\alpha \). For facilities that attempt to maximize profit \(\alpha = 1\), while systems that try to maximize facility access by minimizing average travel time, scale as \(\alpha = 2/3\). This optimal scaling relects emperically observed facility placement. Certainly my introduction to this topic began with Um et al.</p>
+<p>Recently, I’ve been working on this problem of optimal facility placement. Briefly stated, if we have a finite number of resources allowing us to place \(n\) facilities (hospitals, schools, or coffee shops), where should we put them to get maximum benefit, or maximum access. Formulated as an integral equation, we want</p>
 
-<script type="math/tex; mode=display">x^2</script>
+<script type="math/tex; mode=display">f(\vec{r}_1 \dots \vec{r}_p) =\int_{A} \rho (\vec{r}) \min_{i \in \{ 1\dots p} \|\vec{r}-\vec{r}_i\| d^2\vec{r}</script>
 
-<p>Prior to this empirical study, Gastner and Newman published a paper looking at this same facility placement problem. They had previously published a paper demonstrating the applicability of diffusion methods to create density equalizing cartograms, and 
-a</p>
+<p>to be minimized. Here \(\vec{r}_1\) are the facility locations, \(\rho (\vec{r}) \) is the population density, and \(|\vec{r}-\vec{r}_i|\) is the distance from location r to the nearest facility.</p>
 
-<p>Of course this is an interesting result in its own respect, but our contribution is in recognizing that the class of problems, which are solved by optimizing some integral function subject to a set of constraints can be solved by</p>
+<p>Um et. al. reported an optimal facility placement which scales as a power law to the population density
+\( D \sim \rho ^\alpha \)
+For facilities that attempt to maximize profit \(\alpha = 1\)
+, while systems that try to maximize facility access by minimizing average travel time, scale as 
+\(\alpha = 2/3\).
+This optimal scaling relects emperically observed facility placement. Certainly my introduction to this topic began with Um et al.</p>
+
+<p>Prior to this empirical study, Gastner and Newman published a paper looking at this same facility placement problem. They had previously published a paper demonstrating the applicability of diffusion methods to create density equalizing cartograms, and now showed that these cartograms, and the diffusion method powering them, could be used to place facilities. Below is shown their plot of 5000 facilities placed optimally, with the US diffused to equalize \(\rho^{2/3}\) on the right, and equalizing \(\rho\) on the left.</p>
+
+<p><img src="http://localhost:4000/images/newman.png" alt="Newman" /></p>
+
+<p>Of course this is an interesting result in its own respect, but our contribution is in recognizing that the class of problems that are solved by optimizing some integral function subject to a set of constraints, such as this k-medians problems, Highly Optimized Tolerance, or Elastic Net can be better understood through this connection to probability diffusion.</p>
 
 <h2 id="generating-density-equalizing-projections-cart">Generating Density Equalizing Projections: Cart</h2>
-<p>Newman and Gastner published a program for generating cartograms called cart, which given a discrete grid of density values, computes</p>
+<p>Newman and Gastner published a program for generating cartograms called cart, which given a discrete grid of density values, computes the final position of massless points after diffusion occurs, given initial positions in the density distribution.</p>
 
-<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="kt">void</span> <span class="nf">cart_density</span><span class="p">(</span><span class="kt">double</span> <span class="n">t</span><span class="p">,</span> <span class="kt">int</span> <span class="n">s</span><span class="p">,</span> <span class="kt">int</span> <span class="n">xsize</span><span class="p">,</span> <span class="kt">int</span> <span class="n">ysize</span><span class="p">)</span>
-<span class="p">{</span>
-  <span class="kt">int</span> <span class="n">ix</span><span class="p">,</span><span class="n">iy</span><span class="p">;</span>
-  <span class="kt">double</span> <span class="n">kx</span><span class="p">,</span><span class="n">ky</span><span class="p">;</span>
-  <span class="kt">double</span> <span class="n">expkx</span><span class="p">;</span>
-<span class="p">}</span></code></pre></figure>
+<p>By length, most of the c++ code is declaration of variables and allocation of memory, but I briefly go through the relevant computational method.</p>
+
+<p>The code uses fourth-order Runge-Kutta to intergrate the diffusion equation forward in time, and uses two different step sizes to get an error bound, and to pick an adaptive step size.</p>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="cm">/* Do all three RK steps for each point in turn */</span>
+  <span class="n">esqmax</span> <span class="o">=</span> <span class="n">drsqmax</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+
+  <span class="k">for</span> <span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">p</span> <span class="o">&lt;</span> <span class="n">npoints</span><span class="p">;</span> <span class="n">p</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="n">rx1</span> <span class="o">=</span> <span class="n">pointx</span><span class="p">[</span><span class="n">p</span><span class="p">];</span>
+    <span class="n">ry1</span> <span class="o">=</span> <span class="n">pointy</span><span class="p">[</span><span class="n">p</span><span class="p">];</span>
+
+    <span class="cm">/* Do the big combined (2h) RK step */</span>
+
+    <span class="n">cart_velocity</span><span class="p">(</span><span class="n">rx1</span><span class="p">,</span><span class="n">ry1</span><span class="p">,</span><span class="n">s0</span><span class="p">,</span><span class="n">xsize</span><span class="p">,</span><span class="n">ysize</span><span class="p">,</span><span class="o">&amp;</span><span class="n">v1x</span><span class="p">,</span><span class="o">&amp;</span><span class="n">v1y</span><span class="p">);</span>
+    <span class="n">k1x</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">h</span><span class="o">*</span><span class="n">v1x</span><span class="p">;</span>
+    <span class="n">k1y</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">h</span><span class="o">*</span><span class="n">v1y</span><span class="p">;</span>
+    <span class="n">cart_velocity</span><span class="p">(</span><span class="n">rx1</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">k1x</span><span class="p">,</span><span class="n">ry1</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">k1y</span><span class="p">,</span><span class="n">s2</span><span class="p">,</span><span class="n">xsize</span><span class="p">,</span><span class="n">ysize</span><span class="p">,</span><span class="o">&amp;</span><span class="n">v2x</span><span class="p">,</span><span class="o">&amp;</span><span class="n">v2y</span><span class="p">);</span>
+    <span class="n">k2x</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">h</span><span class="o">*</span><span class="n">v2x</span><span class="p">;</span>
+    <span class="n">k2y</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">h</span><span class="o">*</span><span class="n">v2y</span><span class="p">;</span>
+    <span class="n">cart_velocity</span><span class="p">(</span><span class="n">rx1</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">k2x</span><span class="p">,</span><span class="n">ry1</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">k2y</span><span class="p">,</span><span class="n">s2</span><span class="p">,</span><span class="n">xsize</span><span class="p">,</span><span class="n">ysize</span><span class="p">,</span><span class="o">&amp;</span><span class="n">v3x</span><span class="p">,</span><span class="o">&amp;</span><span class="n">v3y</span><span class="p">);</span>
+    <span class="n">k3x</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">h</span><span class="o">*</span><span class="n">v3x</span><span class="p">;</span>
+    <span class="n">k3y</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">h</span><span class="o">*</span><span class="n">v3y</span><span class="p">;</span>
+    <span class="n">cart_velocity</span><span class="p">(</span><span class="n">rx1</span><span class="o">+</span><span class="n">k3x</span><span class="p">,</span><span class="n">ry1</span><span class="o">+</span><span class="n">k3y</span><span class="p">,</span><span class="n">s4</span><span class="p">,</span><span class="n">xsize</span><span class="p">,</span><span class="n">ysize</span><span class="p">,</span><span class="o">&amp;</span><span class="n">v4x</span><span class="p">,</span><span class="o">&amp;</span><span class="n">v4y</span><span class="p">);</span>
+    <span class="n">k4x</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">h</span><span class="o">*</span><span class="n">v4x</span><span class="p">;</span>
+    <span class="n">k4y</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">h</span><span class="o">*</span><span class="n">v4y</span><span class="p">;</span>
+
+    <span class="n">dx12</span> <span class="o">=</span> <span class="p">(</span><span class="n">k1x</span><span class="o">+</span><span class="n">k4x</span><span class="o">+</span><span class="mf">2.0</span><span class="o">*</span><span class="p">(</span><span class="n">k2x</span><span class="o">+</span><span class="n">k3x</span><span class="p">))</span><span class="o">/</span><span class="mf">6.0</span><span class="p">;</span>
+    <span class="n">dy12</span> <span class="o">=</span> <span class="p">(</span><span class="n">k1y</span><span class="o">+</span><span class="n">k4y</span><span class="o">+</span><span class="mf">2.0</span><span class="o">*</span><span class="p">(</span><span class="n">k2y</span><span class="o">+</span><span class="n">k3y</span><span class="p">))</span><span class="o">/</span><span class="mf">6.0</span><span class="p">;</span></code></pre></figure>
+
+<p>Here we see the familiar integration scheme, where the new position of the points is integrated forward in time by an amount 2h multiplied by the velocity in the x and y directions. A nearly identical step integrates forward the same initial position with two smaller h step Runge Kutta iterations.</p>
 
 <h2 id="generating-arbiratry-probability-densities-for-cart">Generating Arbiratry Probability Densities for Cart</h2>
 
@@ -173,9 +208,15 @@ a</p>
 <p>Here is a copy of <a href="http://localhost:4000/assets/dist_gen1.py">dist_gen.py</a>  for your perusal.</p>
 
 <h2 id="results">Results</h2>
+<p>Shown below are the current iteration of figures for this project. The first figure shows on the left 100000 points drawn from both a 2-d exponential and gaussian distribution, color coded by their parition into 50 optimally distributed cells, where the placement of the cells minimizes average distance to the closest cell center. Below is a histogram of the density of the distribution.</p>
 
-<p><img src="http://localhost:4000/images/2.png" alt="This" />
-<img src="http://localhost:4000/images/3.png" alt="This" /></p>
+<p>On the right are the same 100000 xy points, after being diffused by cart, still color coded by voronoi cells. Clearly the density is more uniform than before, looking at the xy points themselves, the concentration of black voronoi cell centers, or the histogram below, which is computed be taking a sampling inside the thin black rectangle.<br />
+<img src="http://localhost:4000/images/2.png" alt="50 Partions" /></p>
+
+<p>The second figure just demonstrates that the code works for an arbitrary  number of partitions, in this case 500. You can see near the top edge of this image, that the density is still noticably non-uniform. This is likely due to the course grained binning that occurs, and that the transition from zero density in the top right corner to average density just outside the 512x512 array of interest is instantaneous. 
+<img src="http://localhost:4000/images/500.png" alt="500 Partions" />
+The code used to generate these images is <a href="http://localhost:4000/assets/Equipartitioning.ipynb">Equipartitioning</a>, though you should be warned its path depence hasn’t been designed with other machines in mind, and I haven’t added my implementation of k-medians to the scipy.cluster.vq repository yet.</p>
+
 
   </div>
 
