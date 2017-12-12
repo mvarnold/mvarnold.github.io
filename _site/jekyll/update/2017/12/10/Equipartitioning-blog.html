@@ -114,7 +114,7 @@ For facilities that attempt to maximize profit \(\alpha = 1\)
 \(\alpha = 2/3\).
 This optimal scaling relects emperically observed facility placement. Certainly my introduction to this topic began with Um et al.</p>
 
-<p>Prior to this empirical study, Gastner and Newman published a paper looking at this same facility placement problem. They had previously published a paper demonstrating the applicability of diffusion methods to create density equalizing cartograms, and now showed that these cartograms, and the diffusion method powering them, could be used to place facilities. Below is shown their plot of 5000 facilities placed optimally, with the US diffused to equalize \(\rho^{2/3}\) on the right, and equalizing \(\rho\) on the left.</p>
+<p>Prior to this empirical study, Gastner and Newman published a paper looking at this same facility placement problem. They had previously published a paper demonstrating the applicability of diffusion methods to create density equalizing cartograms, and now showed that these cartograms, and the diffusion method powering them, could be used to place facilities. Below is shown Gastner and Newman’s plot of 5000 facilities placed optimally, with the US diffused to equalize \(\rho^{2/3}\) on the right, and equalizing \(\rho\) on the left.</p>
 
 <p><img src="http://localhost:4000/images/newman.png" alt="Newman" /></p>
 
@@ -123,7 +123,7 @@ This optimal scaling relects emperically observed facility placement. Certainly 
 <h2 id="generating-density-equalizing-projections-cart">Generating Density Equalizing Projections: Cart</h2>
 <p>Newman and Gastner published a program for generating cartograms called cart, which given a discrete grid of density values, computes the final position of massless points after diffusion occurs, given initial positions in the density distribution.</p>
 
-<p>By length, most of the c++ code is declaration of variables and allocation of memory, but I briefly go through the relevant computational method.</p>
+<p>By length, most of the C++ code is declaration of variables and allocation of memory, but I briefly go through the relevant computational method.</p>
 
 <p>The code uses fourth-order Runge-Kutta to intergrate the diffusion equation forward in time, and uses two different step sizes to get an error bound, and to pick an adaptive step size.</p>
 
@@ -153,7 +153,90 @@ This optimal scaling relects emperically observed facility placement. Certainly 
     <span class="n">dx12</span> <span class="o">=</span> <span class="p">(</span><span class="n">k1x</span><span class="o">+</span><span class="n">k4x</span><span class="o">+</span><span class="mf">2.0</span><span class="o">*</span><span class="p">(</span><span class="n">k2x</span><span class="o">+</span><span class="n">k3x</span><span class="p">))</span><span class="o">/</span><span class="mf">6.0</span><span class="p">;</span>
     <span class="n">dy12</span> <span class="o">=</span> <span class="p">(</span><span class="n">k1y</span><span class="o">+</span><span class="n">k4y</span><span class="o">+</span><span class="mf">2.0</span><span class="o">*</span><span class="p">(</span><span class="n">k2y</span><span class="o">+</span><span class="n">k3y</span><span class="p">))</span><span class="o">/</span><span class="mf">6.0</span><span class="p">;</span></code></pre></figure>
 
-<p>Here we see the familiar integration scheme, where the new position of the points is integrated forward in time by an amount 2h multiplied by the velocity in the x and y directions. A nearly identical step integrates forward the same initial position with two smaller h step Runge Kutta iterations.</p>
+<p>Here we see the familiar integration scheme, where the new position of the points is integrated forward in time by an amount 2h multiplied by the velocity in the x and y directions. The velocities are dependent on local differences in density, which are computed the function cart_vgrid. The meat of the function lies in this loop, which steps through each interior point on the grid and computes the instantaneous velocity, based on the density of the points above below, to the left and right.</p>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="k">for</span> <span class="p">(</span><span class="n">ix</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span> <span class="n">ix</span><span class="o">&lt;</span> <span class="n">xsize</span><span class="p">;</span> <span class="n">ix</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">r01</span> <span class="o">=</span> <span class="n">rhot</span><span class="p">[</span><span class="n">s</span><span class="p">][(</span><span class="n">ix</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">ysize</span><span class="p">];</span>
+    <span class="n">r11</span> <span class="o">=</span> <span class="n">rhot</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">ix</span><span class="o">*</span><span class="n">ysize</span><span class="p">];</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">iy</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span> <span class="n">iy</span><span class="o">&lt;</span> <span class="n">ysize</span><span class="p">;</span> <span class="n">iy</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">r00</span> <span class="o">=</span> <span class="n">r01</span><span class="p">;</span>
+      <span class="n">r10</span> <span class="o">=</span> <span class="n">r11</span><span class="p">;</span>
+      <span class="n">r01</span> <span class="o">=</span> <span class="n">rhot</span><span class="p">[</span><span class="n">s</span><span class="p">][(</span><span class="n">ix</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">ysize</span><span class="o">+</span><span class="n">iy</span><span class="p">];</span>
+      <span class="n">r11</span> <span class="o">=</span> <span class="n">rhot</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">ix</span><span class="o">*</span><span class="n">ysize</span><span class="o">+</span><span class="n">iy</span><span class="p">];</span>
+      <span class="n">mid</span> <span class="o">=</span> <span class="n">r10</span> <span class="o">+</span> <span class="n">r00</span> <span class="o">+</span> <span class="n">r11</span> <span class="o">+</span> <span class="n">r01</span><span class="p">;</span>
+      <span class="n">vxt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">ix</span><span class="p">][</span><span class="n">iy</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">r10</span><span class="o">-</span><span class="n">r00</span><span class="o">+</span><span class="n">r11</span><span class="o">-</span><span class="n">r01</span><span class="p">)</span><span class="o">/</span><span class="n">mid</span><span class="p">;</span>
+      <span class="n">vyt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">ix</span><span class="p">][</span><span class="n">iy</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">r01</span><span class="o">-</span><span class="n">r00</span><span class="o">+</span><span class="n">r11</span><span class="o">-</span><span class="n">r10</span><span class="p">)</span><span class="o">/</span><span class="n">mid</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span></code></pre></figure>
+
+<p>This function imposes hardwall boundary condition,shown partially below.</p>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="cm">/* Do the corners */</span>
+
+  <span class="n">vxt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">vyt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+  <span class="n">vxt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">xsize</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">vyt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">xsize</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+  <span class="n">vxt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">ysize</span><span class="p">]</span> <span class="o">=</span> <span class="n">vyt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">ysize</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+  <span class="n">vxt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">xsize</span><span class="p">][</span><span class="n">ysize</span><span class="p">]</span> <span class="o">=</span> <span class="n">vyt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">xsize</span><span class="p">][</span><span class="n">ysize</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+
+  <span class="cm">/* Do the top border */</span>
+
+  <span class="n">r11</span> <span class="o">=</span> <span class="n">rhot</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">ix</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span> <span class="n">ix</span><span class="o">&lt;</span> <span class="n">xsize</span><span class="p">;</span> <span class="n">ix</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">r01</span> <span class="o">=</span> <span class="n">r11</span><span class="p">;</span>
+    <span class="n">r11</span> <span class="o">=</span> <span class="n">rhot</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">ix</span><span class="o">*</span><span class="n">ysize</span><span class="p">];</span>
+    <span class="n">vxt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">ix</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">r11</span><span class="o">-</span><span class="n">r01</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">r11</span><span class="o">+</span><span class="n">r01</span><span class="p">);</span>
+    <span class="n">vyt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">ix</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="cm">/* Do the bottom border */</span>
+
+  <span class="n">r10</span> <span class="o">=</span> <span class="n">rhot</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">ysize</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">ix</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span> <span class="n">ix</span><span class="o">&lt;</span><span class="n">xsize</span><span class="p">;</span> <span class="n">ix</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">r00</span> <span class="o">=</span> <span class="n">r10</span><span class="p">;</span>
+    <span class="n">r10</span> <span class="o">=</span> <span class="n">rhot</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">ix</span><span class="o">*</span><span class="n">ysize</span><span class="o">+</span><span class="n">ysize</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span>
+    <span class="n">vxt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">ix</span><span class="p">][</span><span class="n">ysize</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">r10</span><span class="o">-</span><span class="n">r00</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">r10</span><span class="o">+</span><span class="n">r00</span><span class="p">);</span>
+    <span class="n">vyt</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">ix</span><span class="p">][</span><span class="n">ysize</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+  <span class="p">}</span></code></pre></figure>
+
+<p>Then arbitary points velocity are computed using a bilinear interpolation from this grid.</p>
+
+<p>A nearly identical step integrates forward the same initial position with two smaller h sized Runge Kutta steps.</p>
+
+<p>The error is estimated by finding the distance between the one big step, and two smaller steps.</p>
+
+<p>This function is dropped into a do loop, which terminates when the target error is achieved.</p>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><span class="n">step</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="n">t</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">blur</span><span class="o">*</span><span class="n">blur</span><span class="p">;</span>
+  <span class="n">h</span> <span class="o">=</span> <span class="n">INITH</span><span class="p">;</span>
+
+  <span class="k">do</span> <span class="p">{</span>
+
+    <span class="cm">/* Do a combined (triple) integration step */</span>
+
+    <span class="n">cart_twosteps</span><span class="p">(</span><span class="n">pointx</span><span class="p">,</span><span class="n">pointy</span><span class="p">,</span><span class="n">npoints</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">xsize</span><span class="p">,</span><span class="n">ysize</span><span class="p">,</span><span class="o">&amp;</span><span class="n">error</span><span class="p">,</span><span class="o">&amp;</span><span class="n">dr</span><span class="p">,</span><span class="o">&amp;</span><span class="n">sp</span><span class="p">);</span>
+
+    <span class="cm">/* Increase the time by 2h and rotate snapshots */</span>
+
+    <span class="n">t</span> <span class="o">+=</span> <span class="mf">2.0</span><span class="o">*</span><span class="n">h</span><span class="p">;</span>
+    <span class="n">step</span> <span class="o">+=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">sp</span><span class="p">;</span>
+
+    <span class="cm">/* Adjust the time-step.  Factor of 2 arises because the target for
+     * the two-step process is twice the target for an individual step */</span>
+
+    <span class="n">desiredratio</span> <span class="o">=</span> <span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">TARGETERROR</span><span class="o">/</span><span class="n">error</span><span class="p">,</span><span class="mf">0.2</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">desiredratio</span><span class="o">&gt;</span><span class="n">MAXRATIO</span><span class="p">)</span> <span class="n">h</span> <span class="o">*=</span> <span class="n">MAXRATIO</span><span class="p">;</span>
+    <span class="k">else</span> <span class="n">h</span> <span class="o">*=</span> <span class="n">desiredratio</span><span class="p">;</span>
+
+    <span class="n">done</span> <span class="o">=</span> <span class="n">cart_complete</span><span class="p">(</span><span class="n">t</span><span class="p">);</span></code></pre></figure>
+
+<p>Diffusion of points is achieved by running given initial points through another script, “interp,” which maps them forward to the steady state. This is done with a shell script such as</p>
+
+<figure class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="c">#!/bin/sh</span>
+<span class="nb">cat</span> /Users/Winston/Dropbox/Equipartition/cart-1.2.2/exp2.dat | ./interp 512 512 expout.dat <span class="o">&gt;</span> /Users/Winston/Dropbox/Equipartition/cart-1.2.2/expout2.dat</code></pre></figure>
+
+<p>although if a pair of points is typed into the termial after initializing interp it will output the diffused xy pair.</p>
 
 <h2 id="generating-arbiratry-probability-densities-for-cart">Generating Arbiratry Probability Densities for Cart</h2>
 
@@ -213,9 +296,11 @@ This optimal scaling relects emperically observed facility placement. Certainly 
 <p>On the right are the same 100000 xy points, after being diffused by cart, still color coded by voronoi cells. Clearly the density is more uniform than before, looking at the xy points themselves, the concentration of black voronoi cell centers, or the histogram below, which is computed be taking a sampling inside the thin black rectangle.<br />
 <img src="http://localhost:4000/images/2.png" alt="50 Partions" /></p>
 
-<p>The second figure just demonstrates that the code works for an arbitrary  number of partitions, in this case 500. You can see near the top edge of this image, that the density is still noticably non-uniform. This is likely due to the course grained binning that occurs, and that the transition from zero density in the top right corner to average density just outside the 512x512 array of interest is instantaneous. 
+<p>The second figure just demonstrates that the code works for an arbitrary  number of partitions, in this case 500. You can see near the top edge of this image, that the density is still noticably non-uniform. This is likely due to the course grained binning that occurs, and that the transition from zero density in the top right corner to average density just outside the 512x512 array of interest is instantaneous. Of course it is also true that this k-medians method distributes facilities \(D\sim \rho^{2/3}\) so we should expect that regions with a lower population density prior to diffusion will be regions of higher facility density on a population density equalized cartogram.
 <img src="http://localhost:4000/images/500.png" alt="500 Partions" />
 The code used to generate these images is <a href="http://localhost:4000/assets/Equipartitioning.ipynb">Equipartitioning</a>, though you should be warned its path depence hasn’t been designed with other machines in mind, and I haven’t added my implementation of k-medians to the scipy.cluster.vq repository yet.</p>
+
+<p>The k-medians implimentation and the dynamic shell script creation all takes place inside this jupyter notebook.</p>
 
 
   </div>
