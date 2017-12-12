@@ -4,6 +4,9 @@ title:  "Equiparitioning"
 date:   2017-12-10 15:46:30 -0500
 categories: jekyll update
 ---
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 ## Introduction
 Recently, I've been working on this problem of optimal facility placement. Um et. al. reported an optimal facility placement which scales as a power law to the population density  \\( D \sim p^\alpha \\). For facilities that attempt to maximize profit \\(\alpha = 1\\), while systems that try to maximize facility access by minimizing average travel time, scale as \\(\alpha = 2/3\\). This optimal scaling relects emperically observed facility placement. Certainly my introduction to this topic began with Um et al.
 
