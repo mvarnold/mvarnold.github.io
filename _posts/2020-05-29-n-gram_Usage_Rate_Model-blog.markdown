@@ -33,6 +33,6 @@ However, this appears to be an artifact of omitting zero days, and something a r
 
 | Example N-Gram | Usage Rate | Rank | Minimum Sample Size |
 |-------|--------|---------|---------|
-| people | 0.0011 | 100 | $10^3$ |
-| enjoy | 0.00011 | 800 |  $10^4$ |
-| snap | 0.000013 | 5000 | $10^5$ |
+| people | 0.0011 | 100 | $$10^3$$ |
+| enjoy | 0.00011 | 800 |  $$10^4$$ |
+| snap | 0.000013 | 5000 | $$10^5$$ |
