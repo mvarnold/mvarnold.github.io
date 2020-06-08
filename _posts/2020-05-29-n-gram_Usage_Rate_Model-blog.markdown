@@ -31,3 +31,8 @@ However, this appears to be an artifact of omitting zero days, and something a r
 ![Observed Usage Rate]({{ "/images/observed_ambient_usage_rate.png" | absolute_url }})
 *Figure 1: Poission usage rate model. The top panel shows the increase in accuracy as we increase $$\lambda\_\alpha$$, approximately the number of tweets used to compute an ambient usage rate. The middle panel shows how failing to include the zero values in mean of the usage rate causes an increasing inflated estimated usage rate. The bottom panel shows how Mean Squared Error decreases with increased sample size, and how estimates with and without zero values converge.*
 
+| Example N-Gram | Usage Rate | Rank | Minimum Sample Size |
+|-------|--------|---------|---------|
+| people | 0.0011 | 100 | $10^3$ |
+| enjoy | 0.00011 | 800 |  $10^4$ |
+| snap | 0.000013 | 5000 | $10^5$ |
