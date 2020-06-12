@@ -36,5 +36,6 @@ However, this appears to be an artifact of omitting zero days, and something a r
 | people | 0.0011 | 100 | $$10^3$$ |
 | enjoy | 0.00011 | 800 |  $$10^4$$ |
 | snap | 0.000013 | 5000 | $$10^5$$ |
+
 ![Sampled Rank Divergence]({{ "/images/Sampling_distribution.png" | absolute_url }})
 *Figure 2: Convergence of word distributions as we increase the size of a random sample of tweets containinga given anchor word. We expect the rank divergence to converge to zero as the number of tweets increases. When this occurs depends on how many discrete tweets exist in our main collection from which we sample, and the usage rate of the given word.*
