@@ -38,4 +38,4 @@ However, this appears to be an artifact of omitting zero days, and something a r
 | snap | 0.000013 | 5000 | $$10^5$$ |
 
 ![Sampled Rank Divergence]({{ "/images/Sampling_distribution.png" | absolute_url }})
-*Figure 2: Convergence of word distributions as we increase the size of a random sample of tweets containinga given anchor word. We expect the rank divergence to converge to zero as the number of tweets increases. When this occurs depends on how many discrete tweets exist in our main collection from which we sample, and the usage rate of the given word.*
+*Figure 2: Convergence of word distributions as we increase the size of a random sample of tweets containinga given anchor word. We expect the rank divergence to converge to zero as the number of tweets increases. When this occurs depends on how many discrete tweets exist in our main collection from which we sample, and the usage rate of the given word. The panel on the right shows the timeseries of the words over the 10 day period from which they are drawn, with the color chosen via the mean usage rate of each word over this period.*
