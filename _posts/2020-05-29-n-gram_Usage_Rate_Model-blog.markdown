@@ -14,11 +14,11 @@ Interested in building instruments to measure large scale language use?
 Want to do sentiment polling around topics close to your heart? 
 With access to Twitter data, these objectives seem within reach. But just how reliable are the results? 
 
-One of the most fundimental tasks we might be interested in is estimating a word or $n$-gram's usage rate over time.
-How accurate should we expect usage rates to be, is a vital question, especially for ambient usage rates, which might be computed from less than $$10^3$$ tweets or from more than $$10^6$$ tweets on a single day. Understanding the variation in usage rate espected for a given sample size of tweets is the main objective here.
+One of the most fundamental tasks we might be interested in is estimating a word or $n$-gram's usage rate over time.
+How accurate should we expect usage rates to be, is a vital question, especially for ambient usage rates, which might be computed from less than $$10^3$$ tweets or from more than $$10^6$$ tweets on a single day. Understanding the variation in usage rate expected for a given sample size of tweets is the main objective here.
 
 This is the model I came up with.
-We begin with the assumption that we have a poission process generating a word's usage rate $$f\_\tau$$, 
+We begin with the assumption that we have a Poisson process generating a word's usage rate $$f\_\tau$$, 
 which we try to estimate, $$\bar{f}\_\tau$$. 
 The true usage rate is constant, but as we increase the size of our sample $$\lambda\_\alpha$$, we expect the error of our estimate to decrease. The size of our sample is explicitly modeled as the counts of the anchor word in our sample, but this should approximately correspond to the number of tweets we need to sample for a given acceptable error level.   
 
