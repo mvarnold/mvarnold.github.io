@@ -1,3 +1,12 @@
+---
+layout: post
+title:  "User Location Validation"
+date:   2020-07-21 18:46:30 -0500
+categories: jekyll update
+---
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 
 # User Location Validation
 What follows is an exploration of the validity of self-reported user location data in tweets. While only around 5% of the decahose have this data in a machine processable format (roughly matching the format city, state, e.g. `Burlington, VT`), we hope to show that this subset is a reliable proxy for a user's real world location.
