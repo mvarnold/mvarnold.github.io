@@ -9,7 +9,7 @@ categories: jekyll update
 </script>
 
 # Tweets Database
-An introduction to available capibilities and data on `hydra.uvm.edu`
+An introduction to available capabilities and data on `hydra.uvm.edu`
 
 ### Table of Contents
 1. <a href='#section1'>Connecting to the Database</a>
@@ -48,9 +48,9 @@ print(client)
 <a id='section2'></a>
 
 # Exploring Available Data
-MongoDB organizes data into a heirachry. 
+MongoDB organizes data into a heirachy. 
 The top-most level is the database, which can contain a number of collections containing documents.
-Below is an example database, `tweets` on hydra, which has a number of collections such as `geotweets`, or `one_percent`. Documents in our case are tweet objects.
+Below is an example database, `tweets` on hydra, which has a number of collections such as `geotweets`, or `drip_hose`. Documents in our case are tweet objects.
 
 The image is a screenshot of Mongo Compass [(Download here)](https://www.mongodb.com/try/download/compass), a GUI application to explore data stored in a Mongo database visually. 
 
@@ -90,7 +90,7 @@ database.list_collection_names()
      'charlottesville',
      'tweets_from_handle',
      'obama_tweets_from_handle_beta',
-     'one_percent',
+     'drip_hose',
      'trump_tweet_w_rt',
      'obama_tweets_w_rt',
      'trump_tweets_from_handle_beta',
@@ -102,13 +102,13 @@ We can also select collections from this database object using either syntax.
 
 
 ```python
-database['one_percent']
+database['drip_hose']
 ```
 
 
 
 
-    Collection(Database(MongoClient(host=['localhost:27016'], document_class=dict, tz_aware=False, connect=True), 'tweets'), 'one_percent')
+    Collection(Database(MongoClient(host=['localhost:27016'], document_class=dict, tz_aware=False, connect=True), 'tweets'), 'drip_hose')
 
 
 
@@ -151,7 +151,7 @@ collection.find_one()
 
 Normally we want to query some specific subset of the data, so we write queries as dictionaries and pass them to a `find` method to return many documents. Let's find English tweets from Halloween in 2019. 
 
-For an exact match on field, we just pass the dictionary key a value; therefore we'll let `fastText_lang`, the language feild, be `'en'`, e.i. `{'fastText_lang': 'en'}`.
+For an exact match on field, we just pass the dictionary key a value; therefore we'll let `fastText_lang`, the language field, be `'en'`, e.i. `{'fastText_lang': 'en'}`.
 
 If we want to specify a range, such as to match all tweets from 12:00am on Halloween to the next night, we can pass [mongo operators](https://docs.mongodb.com/manual/reference/operator/query/) in dictionaries as the value to a key. The `tweet_created_at` field is what we want to match, so we send the value for it as `{'$gte':date, '$lt':date+datetime.timedelta(1)}`. Pymongo will except normal python datetime types in queries. Thus our full query is as follows:
 
@@ -163,7 +163,7 @@ query = {'fastText_lang': 'en',
              {'$gte':date, '$lt':date+datetime.timedelta(1)}}
 ```
 
-Let's look at the `pure_text` field of the matching tweets. We'll run our query, and iterate over the returned pymongo curser. You might want to quit if it runs for too long.
+Let's look at the `pure_text` field of the matching tweets. We'll run our query, and iterate over the returned pymongo cursor. You might want to quit if it runs for too long.
 
 
 ```python
@@ -818,7 +818,7 @@ Most simple tweet collections are stored in the `tweets` database.
  
 ### 2. `tweets_segmented`
 
-A continuation of the one percent sample, seperated into month-long collections. Begins in January, 2020.
+A continuation of the one percent sample, separated into month-long collections. Begins in January, 2020.
 
 ### 3. `tweets_segmented_ten_percent`
 
